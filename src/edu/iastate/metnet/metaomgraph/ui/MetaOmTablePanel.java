@@ -34,6 +34,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -42,6 +43,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -147,6 +149,7 @@ public class MetaOmTablePanel extends JPanel implements ActionListener, ListSele
 	// urmi
 	private JButton metabutton;
 	private JMenuItem viewCorrStats;
+	private JMenuItem mean;
 	private JButton advFilterButton;
 
 	private JMenuItem atgsItem;
@@ -332,7 +335,11 @@ public class MetaOmTablePanel extends JPanel implements ActionListener, ListSele
 		viewCorrStats = new JMenuItem("View correlation details");
 		viewCorrStats.setActionCommand("viewmetaform");
 		viewCorrStats.addActionListener(this);
-
+		
+		mean = new JMenuItem("Mean");
+		mean.setActionCommand("computemean");
+		mean.addActionListener(this);
+		
 		JPopupMenu analyzePopupMenu = new JPopupMenu();
 		// urmi Add menu and sub menu
 		JMenu corrMenu = new JMenu("Correlation");
@@ -342,7 +349,6 @@ public class MetaOmTablePanel extends JPanel implements ActionListener, ListSele
 		JMenu diffcorrMenu = new JMenu("Differntial Correlation");
 		JMenu informationMenu = new JMenu("Mutual Information");
 		JMenu distMenu = new JMenu("Distance");
-
 		//////////////////////////
 		pearsonItem = new JMenuItem("Pearson Correlation(No pval)");
 		pearsonItem.setActionCommand("pearson correlation");
@@ -496,7 +502,8 @@ public class MetaOmTablePanel extends JPanel implements ActionListener, ListSele
 		analyzePopupMenu.addSeparator();
 		analyzePopupMenu.add(saveCorrelationItem);
 		analyzePopupMenu.add(removeCorrelationMenu);
-
+		analyzePopupMenu.addSeparator();
+		analyzePopupMenu.add(mean);
 		// analyzePopupMenu.add(pairwisePearsonItem);
 		// analyzePopupMenu.add(pairwiseSpearmanItem);
 
@@ -1700,6 +1707,22 @@ public class MetaOmTablePanel extends JPanel implements ActionListener, ListSele
 
 		if (REPORT_COMMAND.equals(e.getActionCommand())) {
 			makeReport();
+			return;
+		}
+		if("computemean".equals(e.getActionCommand())) {
+			NormalDistribution nd = new NormalDistribution();
+			List<Double> randomValues = new ArrayList<Double>(Arrays.stream(nd.sample(1000)).boxed().collect(Collectors.toList()));
+			ComputeMean cm = new ComputeMean();
+			EventQueue.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						JOptionPane.showMessageDialog(null, "Mean of 1,000 Poisson distributed random integers is "+ cm.calculateMean(randomValues));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
 			return;
 		}
 		if ("viewmetaform".equals(e.getActionCommand())) {
